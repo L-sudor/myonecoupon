@@ -11,6 +11,11 @@
 
     <artifactId>myonecoupon-framework</artifactId>
 
+    <properties>
+        <!-- framework 是公共类库，没有启动类，不需要 repackage 成可执行 jar -->
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
+
     <dependencies>
 
         <dependency>
