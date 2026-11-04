@@ -1,7 +1,8 @@
-package org.sylvester.framework.result;
+package org.sylvester.framework.web;
 
 import org.sylvester.framework.errorcode.BaseErrorCode;
 import org.sylvester.framework.exception.AbstractException;
+import org.sylvester.framework.result.Result;
 
 import java.util.Optional;
 
