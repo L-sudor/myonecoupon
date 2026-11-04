@@ -1,3 +1,6 @@
 spring:
   application:
     name: myonecoupon-engine
+
+server:
+  port: 10020

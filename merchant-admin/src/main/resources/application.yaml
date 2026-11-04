@@ -1,3 +1,6 @@
 spring:
   application:
     name: myonecoupon-merchant-admin
+
+server:
+  port: 10010

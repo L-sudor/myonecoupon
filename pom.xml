@@ -21,7 +21,7 @@
         <module>framework</module>
         <!-- 分发模块：负责按批次分发用户优惠券，可提供应用弹框推送、站内信或短信通知等 -->
         <module>distribution</module>
-        <!-- 结算模块：负责用户下单时订单金额计算功能 -->
+        <!-- 结算模块：负责用户下单时订单金额计算功能，因和订单相关联，该服务流量较大 -->
         <module>settlement</module>
         <!-- 搜索模块：提供用户优惠券搜索功能 -->
         <module>search</module>

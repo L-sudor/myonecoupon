@@ -1,3 +1,6 @@
 spring:
   application:
     name: myonecoupon-settlement
+
+server:
+  port: 10030
