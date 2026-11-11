@@ -28,7 +28,7 @@
         <!-- 牛券基础架构组件包相关依赖 -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>myonecoupon-all</artifactId>
+            <artifactId>myonecoupon-framework</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -63,6 +63,12 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-jdbc-core</artifactId>
+            <version>${shardingsphere.version}</version>
         </dependency>
 
         <!-- 接口文档相关依赖 -->

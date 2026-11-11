@@ -7,6 +7,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.sylvester.merchant.admin.service.handler.filter.CouponTemplateCreateParamBaseVerifyChainFilter;
+import org.sylvester.merchant.admin.service.handler.filter.CouponTemplateCreateParamNotNullChainFilter;
+import org.sylvester.merchant.admin.service.handler.filter.CouponTemplateCreateParamVerifyChainFilter;
 
 import java.util.*;
 

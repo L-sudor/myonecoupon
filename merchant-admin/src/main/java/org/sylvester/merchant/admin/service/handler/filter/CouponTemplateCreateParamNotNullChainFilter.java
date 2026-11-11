@@ -3,6 +3,7 @@ package org.sylvester.merchant.admin.service.handler.filter;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.stereotype.Component;
+import org.sylvester.framework.exception.ClientException;
 import org.sylvester.merchant.admin.dto.req.CouponTemplateSaveReqDTO;
 import org.sylvester.merchant.admin.service.basics.chain.MerchantAdminAbstractChainHandler;
 

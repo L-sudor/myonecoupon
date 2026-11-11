@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import org.springframework.stereotype.Component;
+import org.sylvester.framework.exception.ClientException;
 import org.sylvester.merchant.admin.common.enums.DiscountTargetEnum;
 import org.sylvester.merchant.admin.common.enums.DiscountTypeEnum;
 import org.sylvester.merchant.admin.dto.req.CouponTemplateSaveReqDTO;
