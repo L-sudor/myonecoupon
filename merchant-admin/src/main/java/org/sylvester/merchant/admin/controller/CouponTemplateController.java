@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.sylvester.framework.idempotent.NoDuplicateSubmit;
 import org.sylvester.framework.result.Result;
 import org.sylvester.framework.web.Results;
 import org.sylvester.merchant.admin.dto.req.CouponTemplateSaveReqDTO;
@@ -21,6 +22,7 @@ public class CouponTemplateController {
 
     private final CouponTemplateService couponTemplateService;
 
+    @NoDuplicateSubmit
     @Operation(summary = "商家创建优惠券模板")
     @PostMapping("/api/merchant-admin/coupon-template/create")
     public Result<Void> createCouponTemplate(@RequestBody CouponTemplateSaveReqDTO requestParam) {

@@ -1,1 +1,2 @@
 org.sylvester.framework.config.WebAutoConfiguration
+org.sylvester.framework.config.IdempotentConfiguration
