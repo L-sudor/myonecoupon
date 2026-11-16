@@ -13,7 +13,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,7 +26,10 @@ public final class ExcelGenerateTests {
      */
     private final int writeNum = 1000000;
     private final Faker faker = new Faker(Locale.CHINA);
-    private final String excelPath = Paths.get("").toAbsolutePath().getParent() + "/tmp";
+    /**
+     * Excel 输出目录：相对 JVM 工作目录，落在模块目录下的 tmp 中，不会跑到项目之外
+     */
+    private final String excelPath = "tmp";
 
     @Test
     public void testExcelGenerate() {
