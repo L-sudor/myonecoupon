@@ -6,10 +6,17 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RBlockingDeque;
 import org.redisson.api.RDelayedQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.sylvester.framework.exception.ClientException;
@@ -25,11 +32,13 @@ import org.sylvester.merchant.admin.service.CouponTemplateService;
 import org.sylvester.merchant.admin.service.handler.excel.RowCountListener;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
  * 优惠券推送业务逻辑实现层
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponTaskServiceImpl extends ServiceImpl<CouponTaskMapper, CouponTaskDO> implements CouponTaskService {
@@ -37,6 +46,8 @@ public class CouponTaskServiceImpl extends ServiceImpl<CouponTaskMapper, CouponT
     private final CouponTemplateService couponTemplateService;
     private final CouponTaskMapper couponTaskMapper;
     private final RedissonClient redissonClient;
+    private final RocketMQTemplate rocketMQTemplate;
+    private final ConfigurableEnvironment configurableEnvironment;
 
     /**
      * 为什么这里拒绝策略使用直接丢弃任务？因为在发送任务时如果遇到发送数量为空，会重新进行统计
@@ -88,6 +99,32 @@ public class CouponTaskServiceImpl extends ServiceImpl<CouponTaskMapper, CouponT
         RDelayedQueue<Object> delayedQueue = redissonClient.getDelayedQueue(blockingDeque);
         // 这里延迟时间设置 20 秒，原因是我们笃定上面线程池 20 秒之内就能结束任务
         delayedQueue.offer(delayJsonObject, 20, TimeUnit.SECONDS);
+
+        // 如果是立即发送任务，直接调用消息队列进行发送流程
+        if (Objects.equals(requestParam.getSendType(), CouponTaskSendTypeEnum.IMMEDIATE.getType())) {
+            // 使用 RocketMQ5.x 发送任意时间延时消息
+            // 定义 Topic
+            String couponTemplateDelayCloseTopic = "myone-coupon_distribution-service_coupon-task-execute_topic${unique-name:}";
+
+            // 通过 Spring 上下文解析占位符，也就是把咱们 VM 参数里的 unique-name 替换到字符串中
+            couponTemplateDelayCloseTopic = configurableEnvironment.resolvePlaceholders(couponTemplateDelayCloseTopic);
+
+            // 构建消息体
+            String messageKeys = UUID.randomUUID().toString();
+            Message<Long> message = MessageBuilder
+                    .withPayload(couponTaskDO.getId())
+                    .setHeader(MessageConst.PROPERTY_KEYS, messageKeys)
+                    .build();
+
+            // 执行 RocketMQ5.x 消息队列发送&异常处理逻辑
+            SendResult sendResult;
+            try {
+                sendResult = rocketMQTemplate.syncSend(couponTemplateDelayCloseTopic, message, 2000L);
+                log.info("[生产者] 执行优惠券分发任务 - 发送结果：{}，消息ID：{}，消息Keys：{}", sendResult.getSendStatus(), sendResult.getMsgId(), messageKeys);
+            } catch (Exception ex) {
+                log.error("[生产者] 执行优惠券分发任务 - 消息发送失败，消息体：{}", couponTaskDO.getId(), ex);
+            }
+        }
     }
 
 
