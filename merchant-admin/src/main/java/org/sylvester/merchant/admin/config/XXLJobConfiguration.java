@@ -3,6 +3,7 @@ package org.sylvester.merchant.admin.config;
 import cn.hutool.core.util.StrUtil;
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * XXL-Job 配置类
  */
 @Configuration
+@ConditionalOnProperty(prefix = "xxl-job", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class XXLJobConfiguration {
 
     @Value("${xxl-job.admin.addresses:}")
