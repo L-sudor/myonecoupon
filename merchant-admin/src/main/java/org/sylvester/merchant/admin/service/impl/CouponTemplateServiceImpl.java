@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.redisson.api.RBloomFilter;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -60,8 +61,7 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
     private final CouponTemplateMapper couponTemplateMapper;
     private final MerchantAdminChainContext merchantAdminChainContext;
     private final StringRedisTemplate stringRedisTemplate;
-    private final RocketMQTemplate rocketMQTemplate;
-    private final ConfigurableEnvironment configurableEnvironment;
+    private final RBloomFilter<String> couponTemplateQueryBloomFilter;
     private final CouponTemplateDelayExecuteStatusProducer couponTemplateDelayExecuteStatusProducer;
 
     @SneakyThrows
@@ -133,6 +133,9 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
                 .delayTime(couponTemplateDO.getValidEndTime().getTime())
                 .build();
         couponTemplateDelayExecuteStatusProducer.sendMessage(templateDelayEvent);
+
+        // 添加优惠券模板 ID 到布隆过滤器
+        couponTemplateQueryBloomFilter.add(String.valueOf(couponTemplateDO.getId()));
     }
 
     @Override
