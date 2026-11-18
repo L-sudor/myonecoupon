@@ -56,3 +56,9 @@ rocketmq:
     send-message-timeout: 2000
     retry-times-when-send-failed: 1
     retry-times-when-send-async-failed: 1
+
+logging:
+  level:
+    # Redisson 检测到 Netty 低于 4.1.105 会提示 DNS TCP fallback 不可用；
+    # 该能力仅在 UDP DNS 查询超时时才启用，直连 Redis IP 场景无影响，此处仅降噪
+    org.redisson.connection.SequentialDnsAddressResolverFactory: error
