@@ -13,11 +13,12 @@ import org.springframework.stereotype.Component;
 import org.sylvester.distribution.common.enums.CouponTaskStatusEnum;
 import org.sylvester.distribution.common.enums.CouponTemplateStatusEnum;
 import org.sylvester.distribution.dao.entity.CouponTemplateDO;
+import org.sylvester.distribution.dao.mapper.CouponTaskFailMapper;
 import org.sylvester.distribution.dao.mapper.CouponTaskMapper;
 import org.sylvester.distribution.dao.mapper.CouponTemplateMapper;
-import org.sylvester.distribution.dao.mapper.UserCouponMapper;
 import org.sylvester.distribution.mq.base.MessageWrapper;
 import org.sylvester.distribution.mq.event.CouponTaskExecuteEvent;
+import org.sylvester.distribution.mq.producer.CouponExecuteDistributionProducer;
 import org.sylvester.distribution.service.handler.excel.CouponTaskExcelObject;
 import org.sylvester.distribution.service.handler.excel.ReadExcelDistributionListener;
 
@@ -36,7 +37,8 @@ public class CouponTaskExecuteConsumer implements RocketMQListener<MessageWrappe
     private final CouponTaskMapper couponTaskMapper;
     private final CouponTemplateMapper couponTemplateMapper;
     private final StringRedisTemplate stringRedisTemplate;
-    private final UserCouponMapper userCouponMapper;
+    private final CouponTaskFailMapper couponTaskFailMapper;
+    private final CouponExecuteDistributionProducer couponExecuteDistributionProducer;
 
     @Override
     public void onMessage(MessageWrapper<CouponTaskExecuteEvent> messageWrapper) {
@@ -64,12 +66,11 @@ public class CouponTaskExecuteConsumer implements RocketMQListener<MessageWrappe
 
         // 正式开始执行优惠券推送任务
         var readExcelDistributionListener = new ReadExcelDistributionListener(
-                couponTaskId,
+                couponTaskDO,
+                couponTaskFailMapper,
                 couponTemplateDO,
                 stringRedisTemplate,
-                couponTemplateMapper,
-                userCouponMapper,
-                couponTaskMapper
+                couponExecuteDistributionProducer
         );
         EasyExcel.read(couponTaskDO.getFileAddress(), CouponTaskExcelObject.class, readExcelDistributionListener).sheet().doRead();
     }

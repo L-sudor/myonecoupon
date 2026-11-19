@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: oneCoupon-gateway
+    name: myonecoupon-gateway
   cloud:
     nacos:
       discovery:
@@ -13,8 +13,8 @@ spring:
       username: nacos
     gateway:
       routes:
-        - id: oneCoupon-merchant-admin
-          uri: lb://oneCoupon-merchant-admin/api/merchant-admin/**
+        - id: myonecoupon-merchant-admin
+          uri: lb://myonecoupon-merchant-admin/api/merchant-admin/**
           predicates:
             - Path=/api/merchant-admin/**
         #          暂时先不加黑名单
@@ -27,8 +27,8 @@ spring:
         #                  - /api/merchant-admin/coupon-template/create
         #                  - /api/merchant-admin/coupon-template/page
 
-        - id: oneCoupon-engine
-          uri: lb://oneCoupon-engine/api/engine/**
+        - id: myonecoupon-engine
+          uri: lb://myonecoupon-engine/api/engine/**
           predicates:
             - Path=/api/engine/**
         #          暂时先不加黑名单
@@ -41,18 +41,18 @@ spring:
         #                  - /api/engine/coupon-template-remind/list
         #                  - /api/engine/coupon-template-remind/cancel
 
-        - id: oneCoupon-settlement
-          uri: lb://oneCoupon-settlement/api/settlement/**
+        - id: myonecoupon-settlement
+          uri: lb://myonecoupon-settlement/api/settlement/**
           predicates:
             - Path=/api/settlement/**
 
-        - id: oneCoupon-distribution
-          uri: lb://oneCoupon-distribution/api/distribution/**
+        - id: myonecoupon-distribution
+          uri: lb://myonecoupon-distribution/api/distribution/**
           predicates:
             - Path=/api/distribution/**
 
-        - id: oneCoupon-search
-          uri: lb://oneCoupon-search/api/search/**
+        - id: myonecoupon-search
+          uri: lb://myonecoupon-search/api/search/**
           predicates:
             - Path=/api/search/**
 

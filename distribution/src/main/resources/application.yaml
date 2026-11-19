@@ -21,7 +21,7 @@ mybatis-plus:
 rocketmq:
   name-server: 127.0.0.1:9876
   producer:
-    group: myoneCoupon_distribution${unique-name:}-service_common-message-execute_pg
+    group: myone-coupon_distribution${unique-name:}-service_common-message-execute_pg
     send-message-timeout: 2000
     retry-times-when-send-failed: 1
     retry-times-when-send-async-failed: 1
