@@ -21,6 +21,7 @@ import org.sylvester.distribution.mq.event.CouponTaskExecuteEvent;
 import org.sylvester.distribution.mq.producer.CouponExecuteDistributionProducer;
 import org.sylvester.distribution.service.handler.excel.CouponTaskExcelObject;
 import org.sylvester.distribution.service.handler.excel.ReadExcelDistributionListener;
+import org.sylvester.framework.idempotent.NoMQDuplicateConsume;
 
 /**
  * 优惠券推送定时执行-真实执行消费者
@@ -40,6 +41,11 @@ public class CouponTaskExecuteConsumer implements RocketMQListener<MessageWrappe
     private final CouponTaskFailMapper couponTaskFailMapper;
     private final CouponExecuteDistributionProducer couponExecuteDistributionProducer;
 
+    @NoMQDuplicateConsume(
+            keyPrefix = "mycoupon_task_execute:idempotent:",
+            key = "#messageWrapper.message.couponTaskId",
+            keyTimeout = 120
+    )
     @Override
     public void onMessage(MessageWrapper<CouponTaskExecuteEvent> messageWrapper) {
         // 开头打印日志，平常可 Debug 看任务参数，线上可报平安（比如消息是否消费，重新投递时获取参数等）

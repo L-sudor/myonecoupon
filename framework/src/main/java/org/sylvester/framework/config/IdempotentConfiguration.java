@@ -2,7 +2,9 @@ package org.sylvester.framework.config;
 
 import org.redisson.api.RedissonClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.sylvester.framework.idempotent.NoDuplicateSubmitAspect;
+import org.sylvester.framework.idempotent.NoMQDuplicateConsumeAspect;
 
 /**
  * 幂等组件相关配置类
@@ -15,5 +17,13 @@ public class IdempotentConfiguration {
     @Bean
     public NoDuplicateSubmitAspect noDuplicateSubmitAspect(RedissonClient redissonClient) {
         return new NoDuplicateSubmitAspect(redissonClient);
+    }
+
+    /**
+     * 防止消息队列消费者重复消费消息切面控制器
+     */
+    @Bean
+    public NoMQDuplicateConsumeAspect noMQDuplicateConsumeAspect(StringRedisTemplate stringRedisTemplate) {
+        return new NoMQDuplicateConsumeAspect(stringRedisTemplate);
     }
 }
