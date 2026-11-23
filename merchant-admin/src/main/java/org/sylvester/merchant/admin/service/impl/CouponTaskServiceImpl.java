@@ -7,16 +7,10 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.message.MessageConst;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.redisson.api.RBlockingDeque;
 import org.redisson.api.RDelayedQueue;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.sylvester.framework.exception.ClientException;
@@ -34,7 +28,6 @@ import org.sylvester.merchant.admin.service.CouponTemplateService;
 import org.sylvester.merchant.admin.service.handler.excel.RowCountListener;
 
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
@@ -48,8 +41,6 @@ public class CouponTaskServiceImpl extends ServiceImpl<CouponTaskMapper, CouponT
     private final CouponTemplateService couponTemplateService;
     private final CouponTaskMapper couponTaskMapper;
     private final RedissonClient redissonClient;
-    private final RocketMQTemplate rocketMQTemplate;
-    private final ConfigurableEnvironment configurableEnvironment;
     private final CouponTaskActualExecuteProducer couponTaskActualExecuteProducer;
 
     /**
