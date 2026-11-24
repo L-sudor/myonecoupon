@@ -14,8 +14,8 @@ import org.sylvester.engine.dao.mapper.CouponTemplateRemindMapper;
 import org.sylvester.engine.dto.req.CouponTemplateQueryReqDTO;
 import org.sylvester.engine.dto.req.CouponTemplateRemindCreateReqDTO;
 import org.sylvester.engine.dto.resp.CouponTemplateQueryRespDTO;
-import org.sylvester.engine.mq.event.CouponRemindDelayEvent;
-import org.sylvester.engine.mq.producer.CouponRemindDelayProducer;
+import org.sylvester.engine.mq.event.CouponTemplateRemindDelayEvent;
+import org.sylvester.engine.mq.producer.CouponTemplateRemindDelayProducer;
 import org.sylvester.engine.service.CouponTemplateRemindService;
 import org.sylvester.engine.service.CouponTemplateService;
 import org.sylvester.engine.toolkit.CouponTemplateRemindUtil;
@@ -30,7 +30,7 @@ public class CouponTemplateServiceRemindImpl extends ServiceImpl<CouponTemplateR
 
     private final CouponTemplateRemindMapper couponTemplateRemindMapper;
     private final CouponTemplateService couponTemplateService;
-    private final CouponRemindDelayProducer couponRemindDelayProducer;
+    private final CouponTemplateRemindDelayProducer couponTemplateRemindDelayProducer;
 
     @Override
     @Transactional
@@ -67,7 +67,7 @@ public class CouponTemplateServiceRemindImpl extends ServiceImpl<CouponTemplateR
         }
 
         // 发送预约提醒抢购优惠券延时消息
-        CouponRemindDelayEvent couponRemindDelayEvent = CouponRemindDelayEvent.builder()
+        CouponTemplateRemindDelayEvent couponRemindDelayEvent = CouponTemplateRemindDelayEvent.builder()
                 .couponTemplateId(couponTemplate.getId())
                 .userId(UserContext.getUserId())
                 .contact(UserContext.getUserId())
@@ -77,6 +77,6 @@ public class CouponTemplateServiceRemindImpl extends ServiceImpl<CouponTemplateR
                 .startTime(couponTemplate.getValidStartTime())
                 .delayTime(DateUtil.offsetMinute(couponTemplate.getValidStartTime(), -requestParam.getRemindTime()).getTime())
                 .build();
-        couponRemindDelayProducer.sendMessage(couponRemindDelayEvent);
+        couponTemplateRemindDelayProducer.sendMessage(couponRemindDelayEvent);
     }
 }

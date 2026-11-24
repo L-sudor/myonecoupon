@@ -29,4 +29,9 @@ public final class EngineRedisConstant {
      * 用户已领取优惠券列表模板 Key
      */
     public static final String USER_COUPON_TEMPLATE_LIST_KEY = "myone-coupon_engine:user-template-list:%s";
+
+    /**
+     * 检查用户是否已提醒 Key
+     */
+    public static final String COUPON_REMIND_CHECK_KEY = "myone-coupon_engine:coupon-remind-check:%s_%s_%d_%d";
 }

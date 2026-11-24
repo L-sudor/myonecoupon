@@ -11,7 +11,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.sylvester.engine.mq.base.BaseSendExtendDTO;
 import org.sylvester.engine.mq.base.MessageWrapper;
-import org.sylvester.engine.mq.event.CouponRemindDelayEvent;
+import org.sylvester.engine.mq.event.CouponTemplateRemindDelayEvent;
 
 import java.util.UUID;
 
@@ -20,17 +20,17 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class CouponRemindDelayProducer extends AbstractCommonSendProduceTemplate<CouponRemindDelayEvent> {
+public class CouponTemplateRemindDelayProducer extends AbstractCommonSendProduceTemplate<CouponTemplateRemindDelayEvent> {
 
     private final ConfigurableEnvironment environment;
 
-    public CouponRemindDelayProducer(@Autowired RocketMQTemplate rocketMQTemplate, @Autowired ConfigurableEnvironment environment) {
+    public CouponTemplateRemindDelayProducer(@Autowired RocketMQTemplate rocketMQTemplate, @Autowired ConfigurableEnvironment environment) {
         super(rocketMQTemplate);
         this.environment = environment;
     }
 
     @Override
-    protected BaseSendExtendDTO buildBaseSendExtendParam(CouponRemindDelayEvent messageSendEvent) {
+    protected BaseSendExtendDTO buildBaseSendExtendParam(CouponTemplateRemindDelayEvent messageSendEvent) {
         return BaseSendExtendDTO.builder()
                 .eventName("提醒用户抢券")
                 .keys(messageSendEvent.getUserId() + ":" + messageSendEvent.getCouponTemplateId())
@@ -41,7 +41,7 @@ public class CouponRemindDelayProducer extends AbstractCommonSendProduceTemplate
     }
 
     @Override
-    protected Message<?> buildMessage(CouponRemindDelayEvent messageSendEvent, BaseSendExtendDTO requestParam) {
+    protected Message<?> buildMessage(CouponTemplateRemindDelayEvent messageSendEvent, BaseSendExtendDTO requestParam) {
         String keys = StrUtil.isEmpty(requestParam.getKeys()) ? UUID.randomUUID().toString() : requestParam.getKeys();
         return MessageBuilder
                 .withPayload(new MessageWrapper(keys, messageSendEvent))
