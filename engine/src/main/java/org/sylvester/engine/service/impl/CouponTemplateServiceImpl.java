@@ -18,15 +18,13 @@ import org.sylvester.engine.common.constant.EngineRedisConstant;
 import org.sylvester.engine.common.enums.CouponTemplateStatusEnum;
 import org.sylvester.engine.dao.entity.CouponTemplateDO;
 import org.sylvester.engine.dao.mapper.CouponTemplateMapper;
+import org.sylvester.engine.dao.sharding.DBShardingUtil;
 import org.sylvester.engine.dto.req.CouponTemplateQueryReqDTO;
 import org.sylvester.engine.dto.resp.CouponTemplateQueryRespDTO;
 import org.sylvester.engine.service.CouponTemplateService;
 import org.sylvester.framework.exception.ClientException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -130,6 +128,46 @@ public class CouponTemplateServiceImpl extends ServiceImpl<CouponTemplateMapper,
 
         return BeanUtil.mapToBean(couponTemplateCacheMap, CouponTemplateQueryRespDTO.class, false, CopyOptions.create());
     }
+
+
+    @Override
+    public List<CouponTemplateDO> listCouponTemplateByIds(List<Long> couponTemplateIds, List<Long> shopNumbers) {
+        // 1. 将 shopNumbers集合 对应的index拆分到数据库中
+        Map<Integer, List<Long>> databaseIndexMap = splitIndexByDatabase(shopNumbers);
+
+        List<CouponTemplateDO> result = new ArrayList<>();
+        // 2. 对每个数据库执行查询
+        for (Map.Entry<Integer, List<Long>> entry : databaseIndexMap.entrySet()) {
+            List<Long> shopNumbersSubset = entry.getValue();
+
+            // 执行查询
+            List<CouponTemplateDO> couponTemplateDOList = queryDatabase(couponTemplateIds, shopNumbersSubset);
+            result.addAll(couponTemplateDOList);
+        }
+
+        return result;
+    }
+
+    private List<CouponTemplateDO> queryDatabase(List<Long> couponTemplateIds, List<Long> shopNumbers) {
+        LambdaQueryWrapper<CouponTemplateDO> queryWrapper = Wrappers.lambdaQuery(CouponTemplateDO.class)
+                .in(CouponTemplateDO::getShopNumber, shopNumbers)
+                .in(CouponTemplateDO::getId, couponTemplateIds);
+        return couponTemplateMapper.selectList(queryWrapper);
+    }
+
+    private Map<Integer, List<Long>> splitIndexByDatabase(List<Long> shopNumbers) {
+        Map<Integer, List<Long>> databaseShopNumberMap = new HashMap<>();
+
+        for (Long shopNumber : shopNumbers) {
+            int databaseMod = DBShardingUtil.doCouponSharding(shopNumber);
+            databaseShopNumberMap
+                    .computeIfAbsent(databaseMod, k -> new ArrayList<>())
+                    .add(shopNumber);
+        }
+
+        return databaseShopNumberMap;
+    }
+
 
     /**
      * 缓存击穿解决方案

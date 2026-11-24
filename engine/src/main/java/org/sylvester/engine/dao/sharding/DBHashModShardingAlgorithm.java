@@ -1,5 +1,7 @@
 package org.sylvester.engine.dao.sharding;
 
+import cn.hutool.core.lang.Singleton;
+import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 import org.apache.shardingsphere.infra.util.exception.ShardingSpherePreconditions;
 import org.apache.shardingsphere.sharding.api.sharding.standard.PreciseShardingValue;
@@ -9,6 +11,7 @@ import org.apache.shardingsphere.sharding.exception.algorithm.sharding.ShardingA
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -47,11 +50,19 @@ public final class DBHashModShardingAlgorithm implements StandardShardingAlgorit
     public void init(Properties props) {
         this.props = props;
         shardingCount = getShardingCount(props);
+        Object businessTag = props.get("business-tag");
+        if (Objects.nonNull(businessTag) && StrUtil.isNotBlank(businessTag.toString())) {
+            Singleton.put(businessTag.toString(), this);
+        }
     }
 
     private int getShardingCount(final Properties props) {
         ShardingSpherePreconditions.checkState(props.containsKey(SHARDING_COUNT_KEY), () -> new ShardingAlgorithmInitializationException(getType(), "Sharding count cannot be null."));
         return Integer.parseInt(props.getProperty(SHARDING_COUNT_KEY));
+    }
+
+    public int getShardingMod(long id, int availableTargetSize) {
+        return (int) hashShardingValue(id) % shardingCount / (shardingCount / availableTargetSize);
     }
 
     private long hashShardingValue(final Comparable<?> shardingValue) {

@@ -25,10 +25,12 @@ import static org.sylvester.engine.common.constant.EngineRedisConstant.COUPON_RE
 /**
  * 执行相应的抢券提醒
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CouponTemplateRemindExecutor {
 
+    private final CouponTemplateRemindService couponTemplateRemindService;
     private final SendEmailRemindCouponTemplate sendEmailRemindCouponTemplate;
     private final SendAppMessageRemindCouponTemplate sendAppMessageRemindCouponTemplate;
 
@@ -52,6 +54,11 @@ public class CouponTemplateRemindExecutor {
      * @param couponTemplateRemindDTO 用户预约提醒请求信息
      */
     public void executeRemindCouponTemplate(CouponTemplateRemindDTO couponTemplateRemindDTO) {
+        // 用户没取消预约，则发出提醒
+        if (couponTemplateRemindService.isCancelRemind(couponTemplateRemindDTO)) {
+            log.info("用户已取消优惠券预约提醒，参数：{}", JSON.toJSONString(couponTemplateRemindDTO));
+            return;
+        }
         // 假设刚把消息提交到线程池，突然应用宕机了，我们通过延迟队列进行兜底 Refresh
         RBlockingDeque<String> blockingDeque = redissonClient.getBlockingDeque(REDIS_BLOCKING_DEQUE);
         RDelayedQueue<String> delayedQueue = redissonClient.getDelayedQueue(blockingDeque);
@@ -60,7 +67,6 @@ public class CouponTemplateRemindExecutor {
         delayedQueue.offer(key, 10, TimeUnit.SECONDS);
 
         executorService.execute(() -> {
-            // 用户没取消预约，则发出提醒
             // 向用户发起消息提醒
             switch (Objects.requireNonNull(CouponRemindTypeEnum.getByType(couponTemplateRemindDTO.getType()))) {
                 case APP -> sendAppMessageRemindCouponTemplate.remind(couponTemplateRemindDTO);
