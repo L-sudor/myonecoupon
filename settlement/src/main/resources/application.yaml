@@ -1,6 +1,37 @@
-spring:
-  application:
-    name: myonecoupon-settlement
-
 server:
   port: 10030
+
+spring:
+  application:
+    name: myoneCoupon-settlement
+  # 本地未启动 Nacos，且当前模块尚未使用服务发现（无 @FeignClient / @DubboReference）；
+  # 后续接入 OpenFeign 调用 engine 时，删掉这段 cloud 配置即可恢复自动注册
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:shardingsphere-config.yaml
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 145690
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+springdoc:
+  default-flat-param-object: true
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: org.sylvester.settlement
