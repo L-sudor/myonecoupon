@@ -38,27 +38,30 @@ public class UserCouponDelayCloseConsumer implements RocketMQListener<MessageWra
         log.info("[消费者] 延迟关闭用户已领取优惠券 - 执行消费逻辑，消息体：{}", JSON.toJSONString(messageWrapper));
         UserCouponDelayCloseEvent event = messageWrapper.getMessage();
 
-        // 删除用户领取优惠券模板缓存记录（用户 ID 取自消息体，消费线程没有 Web 请求上下文）
-        String userCouponListCacheKey = String.format(EngineRedisConstant.USER_COUPON_TEMPLATE_LIST_KEY, event.getUserId());
-        String userCouponItemCacheKey = StrUtil.builder()
-                .append(event.getCouponTemplateId())
-                .append("_")
-                .append(event.getUserCouponId())
-                .toString();
-        Long removed = stringRedisTemplate.opsForZSet().remove(userCouponListCacheKey, userCouponItemCacheKey);
-        if (removed == null || removed == 0L) {
-            return;
-        }
+        // 消息体中的编号均为字符串，统一转成 Long 后再参与查询与分片路由
+        long userId = Long.parseLong(event.getUserId());
+        long userCouponId = Long.parseLong(event.getUserCouponId());
+        long couponTemplateId = Long.parseLong(event.getCouponTemplateId());
 
-        // 修改用户领券记录状态为已过期
+        // 先修改数据库状态为已过期，再删除缓存：数据库写成功而缓存删除失败时，消息重试仍会重新执行更新（带 status = 未使用条件，重复执行安全）
         UserCouponDO userCouponDO = UserCouponDO.builder()
                 .status(UserCouponStatusEnum.EXPIRED.getCode())
                 .build();
         LambdaUpdateWrapper<UserCouponDO> updateWrapper = Wrappers.lambdaUpdate(UserCouponDO.class)
-                .eq(UserCouponDO::getId, event.getUserCouponId())
-                .eq(UserCouponDO::getUserId, event.getUserId())
+                .eq(UserCouponDO::getId, userCouponId)
+                .eq(UserCouponDO::getUserId, userId)
                 .eq(UserCouponDO::getStatus, UserCouponStatusEnum.UNUSED.getCode())
-                .eq(UserCouponDO::getCouponTemplateId, event.getCouponTemplateId());
-        userCouponMapper.update(userCouponDO, updateWrapper);
+                .eq(UserCouponDO::getCouponTemplateId, couponTemplateId);
+        int updated = userCouponMapper.update(userCouponDO, updateWrapper);
+        log.info("[消费者] 延迟关闭用户已领取优惠券 - 更新用户券状态，影响行数：{}", updated);
+
+        // 删除用户领取优惠券模板缓存记录（用户 ID 取自消息体，消费线程没有 Web 请求上下文）
+        String userCouponListCacheKey = String.format(EngineRedisConstant.USER_COUPON_TEMPLATE_LIST_KEY, userId);
+        String userCouponItemCacheKey = StrUtil.builder()
+                .append(couponTemplateId)
+                .append("_")
+                .append(userCouponId)
+                .toString();
+        stringRedisTemplate.opsForZSet().remove(userCouponListCacheKey, userCouponItemCacheKey);
     }
 }
